@@ -49,7 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GooglePlayMusicClient.cs" />
+    <Compile Include="Client\GooglePlayMusicClient.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Album.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Artist.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Attribution.cs" />
@@ -66,7 +66,7 @@
     <Compile Include="Models\RequestModels\MutatePlaylistResponse.cs" />
     <Compile Include="Models\RequestModels\MutateResponse.cs" />
     <Compile Include="Models\RequestModels\SearchResponse.cs" />
-    <Compile Include="OAuthHelper.cs" />
+    <Compile Include="Client\OAuthHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
