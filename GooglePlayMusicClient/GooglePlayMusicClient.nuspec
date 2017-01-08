@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>GooglePlayMusicClient</title>
+    <authors>mitchhymel</authors>
+    <owners>mitchhymel</owners>
+    <projectUrl>https://github.com/mitchhymel/GooglePlayMusicAPI</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A .NET Google Play Music client using OAuth authentication</description>
+    <releaseNotes>Initial release of Google Play Music client for .NET</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+  </metadata>
+</package>
