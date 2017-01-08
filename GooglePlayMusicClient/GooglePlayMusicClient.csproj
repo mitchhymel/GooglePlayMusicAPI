@@ -50,9 +50,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\GooglePlayMusicClient.cs" />
+    <Compile Include="Client\OAuthClient.cs" />
+    <Compile Include="Client\RequestClient.cs" />
+    <Compile Include="Client\IRequestClient.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Album.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Artist.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Attribution.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\Device.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Image.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Playlist.cs" />
     <Compile Include="Models\GooglePlayMusicModels\PlaylistEntry.cs" />
@@ -66,7 +70,6 @@
     <Compile Include="Models\RequestModels\MutatePlaylistResponse.cs" />
     <Compile Include="Models\RequestModels\MutateResponse.cs" />
     <Compile Include="Models\RequestModels\SearchResponse.cs" />
-    <Compile Include="Client\OAuthHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

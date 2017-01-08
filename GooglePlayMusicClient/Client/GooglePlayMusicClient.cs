@@ -15,7 +15,7 @@ namespace GooglePlayMusicAPI
 {
     public class GooglePlayMusicClient
     {
-        private OAuthHelper gpsoauth;
+        private IRequestClient requestClient;
 
         // old client id 565126123933-f27ojtmm7veeb51f8floos7s9vk80i5k
         // Client id from gmusicapi
@@ -31,8 +31,9 @@ namespace GooglePlayMusicAPI
         private static string SJ_URL_TRACK = SJ_URL_BASE + "fetchtrack";
         private static string SJ_URL_ALBUM = SJ_URL_BASE + "fetchalbum";
 
-        private static string STREAM_URL = "https://android.clients.google.com/music/mplay";
-        private static string SJ_STREAM_URL = "https://mclients.googleapis.com/music/";
+        private static string SJ_URL_STREAM = "https://mclients.googleapis.com/music/";
+        private static string SJ_URL_STREAM_TRACK = SJ_URL_STREAM + "mplay";
+        private static string SJ_URL_DEVICE_MANAGEMENT = SJ_URL_BASE + "devicemanagementinfo";
 
         public enum ShareState { PUBLIC, PRIVATE}
         public enum SearchEntryType
@@ -49,17 +50,20 @@ namespace GooglePlayMusicAPI
 
         public GooglePlayMusicClient()
         {
-            gpsoauth = new OAuthHelper();
+            requestClient = new RequestClient(ClientId);
         }
 
-        #region Public Helper functions
+        public GooglePlayMusicClient(IRequestClient inRequestClient)
+        {
+            requestClient = inRequestClient;
+        }
+
+        #region Account functions
 
         public Boolean LoggedIn()
         {
-            return !String.IsNullOrEmpty(gpsoauth.OAuthToken);
+            return requestClient.IsLoggedIn();
         }
-
-        #endregion
 
         /// <summary>
         /// Log in to Google Play Music using OAuth
@@ -69,27 +73,10 @@ namespace GooglePlayMusicAPI
         /// <returns>boolean indicating success or failure</returns>
         public async Task<bool> LoginAsync(string email, string password)
         {
-            Dictionary<String, String> response = await gpsoauth.PerformMasterLogin(email, password);
-            if (!response.ContainsKey("Token"))
-            {
-                Console.WriteLine("Master auth failed");
-                return false;
-            }
-
-            gpsoauth.MasterToken = response["Token"];
-
-            Dictionary<String, String> oauthResponse = await gpsoauth.PerformOAuth(email, gpsoauth.MasterToken, "sj",
-                    "com.google.android.music", ClientId);
-            if (!oauthResponse.ContainsKey("Auth"))
-            {
-                Console.WriteLine("Oauth login failed");
-                return false;
-            }
-
-            gpsoauth.OAuthToken = oauthResponse["Auth"];
-
-            return true;
+            return await requestClient.LoginAsync(email, password);
         }
+
+        #endregion
 
         #region Library and Track functions
 
@@ -100,7 +87,7 @@ namespace GooglePlayMusicAPI
         /// <returns>List of all the songs in the library</returns>
         public async Task<List<Track>> GetLibraryAsync(int tracksToGet = 0)
         {
-            return await PerformIncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
+            return await requestClient.PerformIncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
         }
 
         /// <summary>
@@ -113,7 +100,7 @@ namespace GooglePlayMusicAPI
             NameValueCollection additionalParams = new NameValueCollection();
             additionalParams["nid"] = trackId;
 
-            return await PerformGetAsync<Track>(SJ_URL_TRACK, additionalParams);
+            return await requestClient.PerformGetAsync<Track>(SJ_URL_TRACK, additionalParams);
         }
 
         /// <summary>
@@ -128,11 +115,11 @@ namespace GooglePlayMusicAPI
             additionalParams["nid"] = albumId;
             additionalParams["include-tracks"] = includeTracks.ToString();
 
-            return await PerformGetAsync<Album>(SJ_URL_ALBUM, additionalParams);
+            return await requestClient.PerformGetAsync<Album>(SJ_URL_ALBUM, additionalParams);
         }
 
         /// <summary>
-        /// 
+        /// Searches for the provided query
         /// </summary>
         /// <param name="searchQuery">Query to search for</param>
         /// <param name="types">Bitwise combination of SearchEntryTypes to search for</param>
@@ -145,7 +132,30 @@ namespace GooglePlayMusicAPI
             additionalParams["ct"] = GetSearchEntryTypeFromValue(types);
             additionalParams["max-results"] = maxResults.ToString();
 
-            return await PerformGetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
+            return await requestClient.PerformGetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
+        }
+
+        /// <summary>
+        /// Get a list of devices associated with the account
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Device>> GetDevicesAsync()
+        {
+            IncrementalResponse<Device> response = await requestClient.PerformGetAsync<IncrementalResponse<Device>>(SJ_URL_DEVICE_MANAGEMENT);
+            return response.Data.Items;
+        }
+
+        public async Task<string> GetStreamUrlAsync(string deviceId, string trackId, string quality = "hi")
+        {
+            NameValueCollection additionalParams = new NameValueCollection();
+            additionalParams["device_id"] = deviceId;
+            additionalParams["mjck"] = trackId;
+            additionalParams["opt"] = quality;
+            additionalParams["slt"] = ""; // not sure what this is
+            additionalParams["sig"] = ""; // not sure waht this is
+            additionalParams["net"] = "mob"; // mobile?
+
+            return await requestClient.PerformGetAsync<string>(SJ_URL_STREAM_TRACK, additionalParams);
         }
 
         #endregion
@@ -159,7 +169,7 @@ namespace GooglePlayMusicAPI
         /// <returns>List of all playlists in the library</returns>
         public async Task<List<Playlist>> GetPlaylistsAsync(int playlistsToGet = 0)
         {
-            return await PerformIncrementalPostAsync<Playlist>(SJ_URL_PLAYLISTS_FEED, playlistsToGet);
+            return await requestClient.PerformIncrementalPostAsync<Playlist>(SJ_URL_PLAYLISTS_FEED, playlistsToGet);
         }
 
         /// <summary>
@@ -169,7 +179,7 @@ namespace GooglePlayMusicAPI
         /// <returns></returns>
         public async Task<List<PlaylistEntry>> GetPlaylistEntriesAsync(int entriesToGet = 0)
         {
-            return await PerformIncrementalPostAsync<PlaylistEntry>(SJ_URL_PLAYLISTS_ENTRY_FEED, entriesToGet);
+            return await requestClient.PerformIncrementalPostAsync<PlaylistEntry>(SJ_URL_PLAYLISTS_ENTRY_FEED, entriesToGet);
         }
       
         /// <summary>
@@ -215,7 +225,7 @@ namespace GooglePlayMusicAPI
                 }
             } };
 
-            return await PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
+            return await requestClient.PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
         }
 
         /// <summary>
@@ -232,7 +242,7 @@ namespace GooglePlayMusicAPI
                 }
             } };
 
-            return await PerformPostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
+            return await requestClient.PerformPostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
         }
 
         /// <summary>
@@ -259,7 +269,7 @@ namespace GooglePlayMusicAPI
                 }
             } };
 
-            return await PerformPostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
+            return await requestClient.PerformPostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
         }
 
         /// <summary>
@@ -315,7 +325,7 @@ namespace GooglePlayMusicAPI
                  "mutations", songsToAdd
              }};
 
-            return await PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
+            return await requestClient.PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
         }
 
         /// <summary>
@@ -339,107 +349,9 @@ namespace GooglePlayMusicAPI
                  "mutations", songsToDelete
              }};
 
-            return await PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
+            return await requestClient.PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
         }
 
-
-        #endregion
-
-
-        #region HTTP Helper Functions
-
-        private async Task<List<T>> PerformIncrementalPostAsync<T>(string url, int itemsToGet = 0)
-        {
-            List<T> results = new List<T>();
-            int totalTracks = 0;
-            string nextPageToken = null;
-            do
-            {
-                JObject requestData = new JObject()
-                {
-                    { "max-results", "20000" },
-                    { "start_token", nextPageToken }
-                };
-
-                IncrementalResponse<T> response = await PerformPostAsync<IncrementalResponse<T>>(url, requestData);
-
-                results.AddRange(response.Data.Items);
-                totalTracks += response.Data.Items.Count;
-
-                if (itemsToGet != 0)
-                {
-                    if (totalTracks < itemsToGet)
-                    {
-                        nextPageToken = response.NextPageToken;
-                    }
-                    else
-                    {
-                        return results.Take(itemsToGet).ToList();
-                    }
-                }
-                else
-                {
-                    nextPageToken = response.NextPageToken;
-                }
-            }
-            while (nextPageToken != null);
-
-            return results;
-        }
-
-        private async Task<T> PerformPostAsync<T>(string url, JObject data, NameValueCollection additionalParams = null)
-        {
-            var client = new HttpClient();
-
-            client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue
-                .Parse(String.Format("GoogleLogin auth={0}", gpsoauth.OAuthToken));
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string combinedUrl = BuildRequestUrl(url, additionalParams);
-            string requestBody = data.ToString();
-            HttpContent content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(combinedUrl, content);
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            T result = JsonConvert.DeserializeObject<T>(responseString);
-            return result;
-        }
-
-        private async Task<T> PerformGetAsync<T>(string url, NameValueCollection additionalParams = null)
-        {
-            var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue
-                .Parse(String.Format("GoogleLogin auth={0}", gpsoauth.OAuthToken));
-
-            string combinedUrl = BuildRequestUrl(url, additionalParams);
-            var response = await client.GetAsync(combinedUrl);
-            var responseString = await response.Content.ReadAsStringAsync();
-            T result = JsonConvert.DeserializeObject<T>(responseString);
-            return result;
-        }
-
-        private string BuildRequestUrl(string urlBase, NameValueCollection additionalParams)
-        {
-            var builder = new UriBuilder(urlBase);
-            builder.Port = -1;
-            var query = HttpUtility.ParseQueryString(builder.Query);
-            query["alt"] = "json";
-            query["dv"] = "0";
-            query["hl"] = "en_US";
-            query["tier"] = "aa";
-
-            if (additionalParams != null)
-            {
-                query.Add(additionalParams);
-            }
-
-            builder.Query = query.ToString();
-
-            string combinedUrl = builder.ToString();
-
-            return combinedUrl;
-        }
 
         #endregion
 

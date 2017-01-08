@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -10,9 +8,7 @@ using System.Threading.Tasks;
 
 namespace GooglePlayMusicAPI
 {
-    // gpsoauth:__init__.py
-    // URL: https://github.com/simon-weber/gpsoauth/blob/master/gpsoauth/__init__.py
-    public class OAuthHelper
+    public class OAuthClient
     {
         static string b64Key = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3" +
             "iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pK" +
@@ -27,17 +23,7 @@ namespace GooglePlayMusicAPI
         public string MasterToken { get; set; }
         public string OAuthToken { get; set; }
 
-        public OAuthHelper() { }
-
-        // _perform_auth_request
-        private async Task<string> PerformAuthRequest(Dictionary<string, string> data)
-        {
-            var httpclient = new HttpClient();
-            var content = new FormUrlEncodedContent(data);
-            var response = await httpclient.PostAsync(authUrl, content);
-            var responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
-        }
+        public OAuthClient() { }
 
         // perform_master_login
         public async Task<Dictionary<string, string>> PerformMasterLogin(string email, string password, string service = "ac2dm",
@@ -85,6 +71,16 @@ namespace GooglePlayMusicAPI
             string result = await PerformAuthRequest(dict);
 
             return GoogleKeyUtils.ParseAuthResponse(result);
+        }
+
+        // _perform_auth_request
+        private async Task<string> PerformAuthRequest(Dictionary<string, string> data)
+        {
+            var httpclient = new HttpClient();
+            var content = new FormUrlEncodedContent(data);
+            var response = await httpclient.PostAsync(authUrl, content);
+            var responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
         }
     }
 
