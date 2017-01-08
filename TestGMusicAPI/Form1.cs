@@ -132,7 +132,8 @@ namespace TestGMusicAPI
 
         private async void searchButton_Click(object sender, EventArgs e)
         {
-            List<Device> devices = await gpmClient.GetDevicesAsync();
+            List<ConfigListEntry> config = await gpmClient.GetAccountConfig();
+            string url = await gpmClient.GetStreamUrlAsync("3d1f165c3680182b", "Trfhdsh7td3vyfupw5o3ceigjzi");
             // "0x3d1f165c3680182b"
             // SearchResponse response = await gpmClient.SearchAsync("pmtoday", GooglePlayMusicClient.SearchEntryType.ARTIST | GooglePlayMusicClient.SearchEntryType.SONG);
         }

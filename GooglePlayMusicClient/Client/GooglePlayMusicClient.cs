@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,10 +31,12 @@ namespace GooglePlayMusicAPI
         private static string SJ_URL_SEARCH = SJ_URL_BASE + "query";
         private static string SJ_URL_TRACK = SJ_URL_BASE + "fetchtrack";
         private static string SJ_URL_ALBUM = SJ_URL_BASE + "fetchalbum";
-
         private static string SJ_URL_STREAM = "https://mclients.googleapis.com/music/";
         private static string SJ_URL_STREAM_TRACK = SJ_URL_STREAM + "mplay";
         private static string SJ_URL_DEVICE_MANAGEMENT = SJ_URL_BASE + "devicemanagementinfo";
+        private static string SJ_URL_CONFIG = SJ_URL_BASE + "config";
+
+        public bool IsSubscribed { get; set; }
 
         public enum ShareState { PUBLIC, PRIVATE}
         public enum SearchEntryType
@@ -60,20 +63,48 @@ namespace GooglePlayMusicAPI
 
         #region Account functions
 
-        public Boolean LoggedIn()
+        public bool LoggedIn()
         {
             return requestClient.IsLoggedIn();
         }
 
         /// <summary>
-        /// Log in to Google Play Music using OAuth
+        /// Log in to Google Play Music using OAuth2 and set configuration
         /// </summary>
         /// <param name="email">email</param>
         /// <param name="password">password</param>
         /// <returns>boolean indicating success or failure</returns>
         public async Task<bool> LoginAsync(string email, string password)
         {
-            return await requestClient.LoginAsync(email, password);
+            bool loggedIn = await requestClient.LoginAsync(email, password);
+            if (loggedIn)
+            {
+                List<ConfigListEntry> configList = await GetAccountConfig();
+                string subscribeVal = configList.Where(x => x.Key == "isNautilusUser").First().Value;
+                IsSubscribed = Boolean.Parse(subscribeVal);
+            }
+
+            return loggedIn;
+        }
+
+        /// <summary>
+        /// Gets all of the configuration values for the account (e.g. if subscribed to google play all access)
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<ConfigListEntry>> GetAccountConfig()
+        {
+            ConfigListResponse response = await GetAsync<ConfigListResponse>(SJ_URL_CONFIG);
+            return response.Data.Entries;
+        }
+
+        /// <summary>
+        /// Get a list of devices associated with the account
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Device>> GetDevicesAsync()
+        {
+            IncrementalResponse<Device> response = await GetAsync<IncrementalResponse<Device>>(SJ_URL_DEVICE_MANAGEMENT);
+            return response.Data.Items;
         }
 
         #endregion
@@ -87,7 +118,7 @@ namespace GooglePlayMusicAPI
         /// <returns>List of all the songs in the library</returns>
         public async Task<List<Track>> GetLibraryAsync(int tracksToGet = 0)
         {
-            return await requestClient.PerformIncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
+            return await IncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
         }
 
         /// <summary>
@@ -100,7 +131,7 @@ namespace GooglePlayMusicAPI
             NameValueCollection additionalParams = new NameValueCollection();
             additionalParams["nid"] = trackId;
 
-            return await requestClient.PerformGetAsync<Track>(SJ_URL_TRACK, additionalParams);
+            return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
         }
 
         /// <summary>
@@ -115,7 +146,7 @@ namespace GooglePlayMusicAPI
             additionalParams["nid"] = albumId;
             additionalParams["include-tracks"] = includeTracks.ToString();
 
-            return await requestClient.PerformGetAsync<Album>(SJ_URL_ALBUM, additionalParams);
+            return await GetAsync<Album>(SJ_URL_ALBUM, additionalParams);
         }
 
         /// <summary>
@@ -132,30 +163,19 @@ namespace GooglePlayMusicAPI
             additionalParams["ct"] = GetSearchEntryTypeFromValue(types);
             additionalParams["max-results"] = maxResults.ToString();
 
-            return await requestClient.PerformGetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
-        }
-
-        /// <summary>
-        /// Get a list of devices associated with the account
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<Device>> GetDevicesAsync()
-        {
-            IncrementalResponse<Device> response = await requestClient.PerformGetAsync<IncrementalResponse<Device>>(SJ_URL_DEVICE_MANAGEMENT);
-            return response.Data.Items;
+            return await GetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
         }
 
         public async Task<string> GetStreamUrlAsync(string deviceId, string trackId, string quality = "hi")
         {
             NameValueCollection additionalParams = new NameValueCollection();
-            additionalParams["device_id"] = deviceId;
-            additionalParams["mjck"] = trackId;
             additionalParams["opt"] = quality;
-            additionalParams["slt"] = ""; // not sure what this is
-            additionalParams["sig"] = ""; // not sure waht this is
+            additionalParams["mjck"] = trackId;
+            additionalParams["pt"] = "e";
+            additionalParams.Add(GetSaltAndSig(trackId));
             additionalParams["net"] = "mob"; // mobile?
 
-            return await requestClient.PerformGetAsync<string>(SJ_URL_STREAM_TRACK, additionalParams);
+            return await GetAsync<string>(SJ_URL_STREAM_TRACK, additionalParams);
         }
 
         #endregion
@@ -169,7 +189,7 @@ namespace GooglePlayMusicAPI
         /// <returns>List of all playlists in the library</returns>
         public async Task<List<Playlist>> GetPlaylistsAsync(int playlistsToGet = 0)
         {
-            return await requestClient.PerformIncrementalPostAsync<Playlist>(SJ_URL_PLAYLISTS_FEED, playlistsToGet);
+            return await IncrementalPostAsync<Playlist>(SJ_URL_PLAYLISTS_FEED, playlistsToGet);
         }
 
         /// <summary>
@@ -179,7 +199,7 @@ namespace GooglePlayMusicAPI
         /// <returns></returns>
         public async Task<List<PlaylistEntry>> GetPlaylistEntriesAsync(int entriesToGet = 0)
         {
-            return await requestClient.PerformIncrementalPostAsync<PlaylistEntry>(SJ_URL_PLAYLISTS_ENTRY_FEED, entriesToGet);
+            return await IncrementalPostAsync<PlaylistEntry>(SJ_URL_PLAYLISTS_ENTRY_FEED, entriesToGet);
         }
       
         /// <summary>
@@ -225,7 +245,7 @@ namespace GooglePlayMusicAPI
                 }
             } };
 
-            return await requestClient.PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
+            return await PostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
         }
 
         /// <summary>
@@ -242,7 +262,7 @@ namespace GooglePlayMusicAPI
                 }
             } };
 
-            return await requestClient.PerformPostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
+            return await PostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
         }
 
         /// <summary>
@@ -269,7 +289,7 @@ namespace GooglePlayMusicAPI
                 }
             } };
 
-            return await requestClient.PerformPostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
+            return await PostAsync<MutateResponse>(SJ_URL_PLAYLISTS_BATCH, requestData);
         }
 
         /// <summary>
@@ -325,7 +345,7 @@ namespace GooglePlayMusicAPI
                  "mutations", songsToAdd
              }};
 
-            return await requestClient.PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
+            return await PostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
         }
 
         /// <summary>
@@ -349,13 +369,79 @@ namespace GooglePlayMusicAPI
                  "mutations", songsToDelete
              }};
 
-            return await requestClient.PerformPostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
+            return await PostAsync<MutatePlaylistResponse>(SJ_URL_PLAYLIST_ENTRIES_BATCH, requestData);
         }
 
 
         #endregion
 
+        #region Http Helper functions
+        private async Task<T> GetAsync<T>(string url, NameValueCollection additionalParams = null)
+        {
+            string finalUrl = BuildRequestUrl(url, additionalParams);
+            return await requestClient.PerformGetAsync<T>(finalUrl);
+        }
+
+        private async Task<T> PostAsync<T>(string url, JObject requestData, NameValueCollection additionalParams = null)
+        {
+            string finalUrl = BuildRequestUrl(url, additionalParams);
+            return await requestClient.PerformPostAsync<T>(finalUrl, requestData);
+        }
+
+        private async Task<List<T>> IncrementalPostAsync<T>(string url, int itemsToGet, NameValueCollection additionalParams = null)
+        {
+            string finalUrl = BuildRequestUrl(url, additionalParams);
+            return await requestClient.PerformIncrementalPostAsync<T>(finalUrl, itemsToGet);
+        }
+
+        private string BuildRequestUrl(string urlBase, NameValueCollection additionalParams)
+        {
+            var builder = new UriBuilder(urlBase);
+            builder.Port = -1;
+            var query = HttpUtility.ParseQueryString(builder.Query);
+            query["alt"] = "json";
+            query["dv"] = "0";
+            query["hl"] = "en_US";
+            query["tier"] = IsSubscribed ? "aa" : "fr";
+
+            if (additionalParams != null)
+            {
+                query.Add(additionalParams);
+            }
+
+            builder.Query = query.ToString();
+
+            string combinedUrl = builder.ToString();
+
+            return combinedUrl;
+        }
+
+        #endregion
+
         #region Helper Functions
+
+        private NameValueCollection GetSaltAndSig(string trackId)
+        {
+            NameValueCollection result = new NameValueCollection();
+
+            // Generate salt
+            Random rand = new Random();
+            string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            string salt = new string(Enumerable.Repeat(chars, 12).Select(s => s[rand.Next(s.Length)]).ToArray());
+            result["slt"] = salt;
+
+            string key = "27f7313e-f75d-445a-ac99-56386a5fe879";
+            byte[] keyBin = Encoding.UTF8.GetBytes(key);
+            HMACSHA1 hmac = new HMACSHA1(keyBin);
+            string saltedTrack = trackId + salt;
+            byte[] binToHash = Encoding.UTF8.GetBytes(saltedTrack);
+            byte[] hashedBin = hmac.ComputeHash(binToHash);
+            string hashedStr = Convert.ToBase64String(hashedBin);
+            string sig =  hashedStr.Replace('+', '-').Replace('/', '_').Replace('=', '.');
+            result["sig"] = sig;
+
+            return result;
+        }
 
         private string GetSearchEntryTypeFromValue(SearchEntryType val)
         {

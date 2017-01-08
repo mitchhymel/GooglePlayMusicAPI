@@ -53,6 +53,7 @@
     <Compile Include="Client\OAuthClient.cs" />
     <Compile Include="Client\RequestClient.cs" />
     <Compile Include="Client\IRequestClient.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\ConfigListEntry.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Album.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Artist.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Attribution.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Models\GooglePlayMusicModels\Station.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Track.cs" />
     <Compile Include="Models\GooglePlayMusicModels\YoutubeVideo.cs" />
+    <Compile Include="Models\RequestModels\ConfigListResponse.cs" />
     <Compile Include="Models\RequestModels\IncrementalData.cs" />
     <Compile Include="Models\RequestModels\IncrementalResponse.cs" />
     <Compile Include="Models\RequestModels\MutatePlaylistResponse.cs" />

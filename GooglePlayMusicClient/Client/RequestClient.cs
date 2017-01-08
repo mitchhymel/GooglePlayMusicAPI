@@ -99,11 +99,10 @@ namespace GooglePlayMusicAPI
                 .Parse(String.Format("GoogleLogin auth={0}", gpsoauth.OAuthToken));
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            string combinedUrl = BuildRequestUrl(url, additionalParams);
+            
             string requestBody = data.ToString();
             HttpContent content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(combinedUrl, content);
+            var response = await client.PostAsync(url, content);
             var responseString = await response.Content.ReadAsStringAsync();
 
             T result = JsonConvert.DeserializeObject<T>(responseString);
@@ -116,33 +115,10 @@ namespace GooglePlayMusicAPI
             client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue
                 .Parse(String.Format("GoogleLogin auth={0}", gpsoauth.OAuthToken));
 
-            string combinedUrl = BuildRequestUrl(url, additionalParams);
-            var response = await client.GetAsync(combinedUrl);
+            var response = await client.GetAsync(url);
             var responseString = await response.Content.ReadAsStringAsync();
             T result = JsonConvert.DeserializeObject<T>(responseString);
             return result;
-        }
-
-        private string BuildRequestUrl(string urlBase, NameValueCollection additionalParams)
-        {
-            var builder = new UriBuilder(urlBase);
-            builder.Port = -1;
-            var query = HttpUtility.ParseQueryString(builder.Query);
-            query["alt"] = "json";
-            query["dv"] = "0";
-            query["hl"] = "en_US";
-            query["tier"] = "aa";
-
-            if (additionalParams != null)
-            {
-                query.Add(additionalParams);
-            }
-
-            builder.Query = query.ToString();
-
-            string combinedUrl = builder.ToString();
-
-            return combinedUrl;
         }
     }
 }
