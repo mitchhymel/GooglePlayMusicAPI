@@ -121,33 +121,33 @@ namespace GooglePlayMusicAPI
             return await IncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
         }
 
-        /// <summary>
-        /// Gets track information
-        /// </summary>
-        /// <param name="trackId">Id of the track</param>
-        /// <returns>Track information</returns>
-        public async Task<Track> GetTrackAsync(string trackId)
-        {
-            NameValueCollection additionalParams = new NameValueCollection();
-            additionalParams["nid"] = trackId;
+        ///// <summary>
+        ///// Gets track information
+        ///// </summary>
+        ///// <param name="trackId">Id of the track</param>
+        ///// <returns>Track information</returns>
+        //public async Task<Track> GetTrackAsync(string trackId)
+        //{
+        //    NameValueCollection additionalParams = new NameValueCollection();
+        //    additionalParams["nid"] = trackId;
 
-            return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
-        }
+        //    return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
+        //}
 
-        /// <summary>
-        /// Gets album information
-        /// </summary>
-        /// <param name="albumId">Id of the album</param>
-        /// <param name="includeTracks">boolean indicating if all track information should be fetched as well</param>
-        /// <returns>Album information</returns>
-        public async Task<Album> GetAlbumAsync(string albumId, bool includeTracks = true)
-        {
-            NameValueCollection additionalParams = new NameValueCollection();
-            additionalParams["nid"] = albumId;
-            additionalParams["include-tracks"] = includeTracks.ToString();
+        ///// <summary>
+        ///// Gets album information
+        ///// </summary>
+        ///// <param name="albumId">Id of the album</param>
+        ///// <param name="includeTracks">boolean indicating if all track information should be fetched as well</param>
+        ///// <returns>Album information</returns>
+        //public async Task<Album> GetAlbumAsync(string albumId, bool includeTracks = true)
+        //{
+        //    NameValueCollection additionalParams = new NameValueCollection();
+        //    additionalParams["nid"] = albumId;
+        //    additionalParams["include-tracks"] = includeTracks.ToString();
 
-            return await GetAsync<Album>(SJ_URL_ALBUM, additionalParams);
-        }
+        //    return await GetAsync<Album>(SJ_URL_ALBUM, additionalParams);
+        //}
 
         /// <summary>
         /// Searches for the provided query
@@ -166,17 +166,24 @@ namespace GooglePlayMusicAPI
             return await GetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
         }
 
-        public async Task<string> GetStreamUrlAsync(string deviceId, string trackId, string quality = "hi")
-        {
-            NameValueCollection additionalParams = new NameValueCollection();
-            additionalParams["opt"] = quality;
-            additionalParams["mjck"] = trackId;
-            additionalParams["pt"] = "e";
-            additionalParams.Add(GetSaltAndSig(trackId));
-            additionalParams["net"] = "mob"; // mobile?
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="deviceId"></param>
+        ///// <param name="trackId"></param>
+        ///// <param name="quality"></param>
+        ///// <returns></returns>
+        //public async Task<string> GetStreamUrlAsync(string deviceId, string trackId, string quality = "hi")
+        //{
+        //    NameValueCollection additionalParams = new NameValueCollection();
+        //    additionalParams["opt"] = quality;
+        //    additionalParams["mjck"] = trackId;
+        //    additionalParams["pt"] = "e";
+        //    additionalParams.Add(GetSaltAndSig(trackId));
+        //    additionalParams["net"] = "mob"; // mobile?
 
-            return await GetAsync<string>(SJ_URL_STREAM_TRACK, additionalParams);
-        }
+        //    return await GetAsync<string>(SJ_URL_STREAM_TRACK, additionalParams);
+        //}
 
         #endregion
 
@@ -213,9 +220,10 @@ namespace GooglePlayMusicAPI
 
             foreach (Playlist playlist in playlists)
             {
-                playlist.Songs = entries.Where(s => s.PlaylistID == playlist.ID).ToList();
-                playlist.Songs.OrderBy(s => s.AbsolutePosition);
+                List<PlaylistEntry> thisPlaylistSongs = entries.Where(s => s.PlaylistID == playlist.ID).ToList();
+                playlist.Songs = thisPlaylistSongs.OrderBy(s => long.Parse(s.AbsolutePosition)).ToList();
             }
+
             return playlists;
         }
 

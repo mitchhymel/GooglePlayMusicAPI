@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GooglePlayMusicAPI
 {
-    public class OAuthClient
+    internal class OAuthClient
     {
         static string b64Key = "AAAAgMom/1a/v0lblO2Ubrt60J2gcuXSljGFQXgcyZWveWLEwo6prwgi3" +
             "iJIZdodyhKZQrNWp5nKJ3srRXcUW+F1BD3baEVGcmEgqaLZUNBjm057pK" +

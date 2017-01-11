@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace GooglePlayMusicAPI
 {
-    public class RequestClient : IRequestClient
+    internal class RequestClient : IRequestClient
     {
         private string ClientId { get; set; }
         private OAuthClient gpsoauth { get; set; }
@@ -57,12 +57,13 @@ namespace GooglePlayMusicAPI
             List<T> results = new List<T>();
             int totalTracks = 0;
             string nextPageToken = null;
+            string prevPageToken = null;
             do
             {
                 JObject requestData = new JObject()
                 {
                     { "max-results", "20000" },
-                    { "start_token", nextPageToken }
+                    { "start-token", nextPageToken }
                 };
 
                 IncrementalResponse<T> response = await PerformPostAsync<IncrementalResponse<T>>(url, requestData);
@@ -74,6 +75,7 @@ namespace GooglePlayMusicAPI
                 {
                     if (totalTracks < itemsToGet)
                     {
+                        prevPageToken = nextPageToken;
                         nextPageToken = response.NextPageToken;
                     }
                     else
@@ -83,6 +85,7 @@ namespace GooglePlayMusicAPI
                 }
                 else
                 {
+                    prevPageToken = nextPageToken;
                     nextPageToken = response.NextPageToken;
                 }
             }
