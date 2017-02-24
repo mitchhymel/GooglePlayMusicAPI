@@ -14,8 +14,6 @@ Use of this is a violation of Google Play Music's [Terms of Service](https://pla
 
 This is not supported or endorsed by Google.  If Google decides to change their APIs, it could break the functionality of this library with no guarantee that it will be repaired. This is also in Alpha and not well tested, as I wrote it for my own personal use.
 
-# NuGet package
-You can find this on NuGet at https://www.nuget.org/packages/GooglePlayMusicAPI/
 
 # Usage
 View the GooglePlayMusicClientExample project for examples how to use the library.
