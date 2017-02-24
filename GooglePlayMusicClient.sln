@@ -3,11 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GooglePlayMusicClientExample", "TestGMusicAPI\GooglePlayMusicClientExample.csproj", "{D61BD1FC-DE73-40B5-91DF-D8E756FC752C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GooglePlayMusicClientExample", "GooglePlayMusicClientExample\GooglePlayMusicClientExample.csproj", "{D61BD1FC-DE73-40B5-91DF-D8E756FC752C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GooglePlayMusicClient", "GooglePlayMusicClient\GooglePlayMusicClient.csproj", "{7D0A5653-E2C3-4CEF-AAE1-CF19D4EC3516}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GooglePlayMusicClientTest", "GooglePlayMusicClientTest\GooglePlayMusicClientTest.csproj", "{CCD98130-B67B-4911-BB0C-455261734350}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,14 +30,6 @@ Global
 		{7D0A5653-E2C3-4CEF-AAE1-CF19D4EC3516}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7D0A5653-E2C3-4CEF-AAE1-CF19D4EC3516}.Release|x86.ActiveCfg = Release|Any CPU
 		{7D0A5653-E2C3-4CEF-AAE1-CF19D4EC3516}.Release|x86.Build.0 = Release|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Debug|x86.Build.0 = Debug|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Release|x86.ActiveCfg = Release|Any CPU
-		{CCD98130-B67B-4911-BB0C-455261734350}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

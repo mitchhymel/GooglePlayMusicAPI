@@ -7,14 +7,16 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using GooglePlayMusicAPI;
+using System.Diagnostics;
 
-namespace TestGMusicAPI
+namespace GooglePlayMusicClientExample
 {
     public partial class Form1 : Form
     {
         private List<Playlist> AllPlaylists = new List<Playlist>();
         private List<Track> AllSongs = new List<Track>();
         private List<PlaylistEntry> AllEntries = new List<PlaylistEntry>();
+        private List<Device> AllDevices = new List<Device>();
 
         GooglePlayMusicClient gpmClient = new GooglePlayMusicClient();
 
@@ -31,14 +33,18 @@ namespace TestGMusicAPI
 
         private async void getTracksButton_Click(object sender, EventArgs e)
         {
-            List<Track> library = await gpmClient.GetLibraryAsync();
-            AllSongs = library;
-            foreach(Track song in library)
+            try
             {
-                songListBox.Items.Add(song);
+                List<Track> library = await gpmClient.GetLibraryAsync();
+                AllSongs = library.OrderBy(x => x.Artist).ToList();
+                songListBox.Items.Clear();
+                songListBox.Items.AddRange(AllSongs.ToArray());
+                songTotalLabel.Text = String.Format("Total songs: {0}", AllSongs.Count);
             }
-
-            songTotalLabel.Text = String.Format("Total songs: {0}", library.Count);
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         #region Get playlists
@@ -47,12 +53,9 @@ namespace TestGMusicAPI
         private async void getPlaylistsButton_Click(object sender, EventArgs e)
         {
             List<Playlist> playlists = await gpmClient.GetPlaylistsWithEntriesAsync();
-            AllPlaylists = playlists;
+            AllPlaylists = playlists.OrderBy(x => x.Name).ToList();
             playlistListBox.Items.Clear();
-            foreach (Playlist playlist in playlists)
-            {
-                playlistListBox.Items.Add(playlist);
-            }
+            playlistListBox.Items.AddRange(AllPlaylists.ToArray());
         }
 
         #endregion
@@ -104,7 +107,7 @@ namespace TestGMusicAPI
         #endregion
 
         #region Update playlist songs
-        private void playlistListBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void playlistListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             playlistSongsBox.Items.Clear();
             Playlist selectedPlaylist = (Playlist)playlistListBox.SelectedItem;
@@ -112,7 +115,16 @@ namespace TestGMusicAPI
             {
                 if (!song.Deleted)
                 {
-                    Track thisSong = AllSongs.FirstOrDefault(s => s.ID == song.TrackID);
+                    Track thisSong = null;
+                    if (song.IsAllAccessTrack())
+                    {
+                        thisSong = AllSongs.FirstOrDefault(s => s.StoreID == song.TrackID);
+                    }
+                    else
+                    {
+                        thisSong = AllSongs.FirstOrDefault(s => s.ID == song.TrackID);
+                    }
+
                     if (thisSong != null)
                     {
                         playlistSongsBox.Items.Add(thisSong);
@@ -132,10 +144,42 @@ namespace TestGMusicAPI
 
         private async void searchButton_Click(object sender, EventArgs e)
         {
-            List<ConfigListEntry> config = await gpmClient.GetAccountConfig();
-            // string url = await gpmClient.GetStreamUrlAsync("3d1f165c3680182b", "Trfhdsh7td3vyfupw5o3ceigjzi");
-            // "0x3d1f165c3680182b"
-            // SearchResponse response = await gpmClient.SearchAsync("pmtoday", GooglePlayMusicClient.SearchEntryType.ARTIST | GooglePlayMusicClient.SearchEntryType.SONG);
+            try
+            {
+                //if (AllDevices.Count == 0)
+                //{
+                //    AllDevices = await gpmClient.GetDevicesAsync();
+                //}
+
+                //Device androidDevice = AllDevices.Where(d => d.Type == Device.DeviceType.IOS).FirstOrDefault();
+                //if (androidDevice == null)
+                //{
+                //    Debug.WriteLine("No android devices found");
+                //    return;
+                //}
+
+
+                //ListBox.SelectedObjectCollection songsSelected = songListBox.SelectedItems;
+                //Track song = (Track)songsSelected[0];
+                //if (song == null)
+                //{
+                //    Debug.WriteLine("No track selected");
+                //}
+
+                //string url = await gpmClient.GetStreamUrlAsync(androidDevice.Id, song.ID);
+                //string path = song.ToString() + ".mp3";
+
+                //Debug.WriteLine(path);
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception.StackTrace);
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.Size = new Size(1000, 700);
         }
     }
 }

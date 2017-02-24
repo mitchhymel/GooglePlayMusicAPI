@@ -8,8 +8,8 @@
     <ProjectGuid>{D61BD1FC-DE73-40B5-91DF-D8E756FC752C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestGMusicAPI</RootNamespace>
-    <AssemblyName>TestGMusicAPI</AssemblyName>
+    <RootNamespace>GooglePlayMusicClientExample</RootNamespace>
+    <AssemblyName>GooglePlayMusicClientExample</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>

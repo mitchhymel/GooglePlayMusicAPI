@@ -10,6 +10,11 @@ namespace GooglePlayMusicAPI
     [DataContract]
     public class PlaylistEntry
     {
+        public bool IsAllAccessTrack()
+        {
+            return TrackID.StartsWith("T");
+        }
+
         [DataMember(Name = "kind")]
         public string Kind { get; set; }
         [DataMember(Name = "id")]

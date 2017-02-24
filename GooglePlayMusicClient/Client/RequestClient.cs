@@ -94,7 +94,7 @@ namespace GooglePlayMusicAPI
             return results;
         }
 
-        public async Task<T> PerformPostAsync<T>(string url, JObject data, NameValueCollection additionalParams = null)
+        public async Task<T> PerformPostAsync<T>(string url, JObject data)
         {
             var client = new HttpClient();
 
@@ -112,16 +112,42 @@ namespace GooglePlayMusicAPI
             return result;
         }
 
-        public async Task<T> PerformGetAsync<T>(string url, NameValueCollection additionalParams = null)
+        public async Task<T> PerformGetAsync<T>(string url, NameValueCollection additionalHeaders = null)
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue
                 .Parse(String.Format("GoogleLogin auth={0}", gpsoauth.OAuthToken));
 
+            if (additionalHeaders != null)
+            {
+                foreach (string key in additionalHeaders.Keys)
+                {
+                    client.DefaultRequestHeaders.Add(key, additionalHeaders.Get(key));
+                }
+            }
+
             var response = await client.GetAsync(url);
             var responseString = await response.Content.ReadAsStringAsync();
             T result = JsonConvert.DeserializeObject<T>(responseString);
             return result;
+        }
+
+        public async Task<string> PerformGetStringAsync(string url, NameValueCollection additionalHeaders = null)
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue
+                .Parse(String.Format("GoogleLogin auth={0}", gpsoauth.OAuthToken));
+
+            if (additionalHeaders != null)
+            {
+                foreach (string key in additionalHeaders.Keys)
+                {
+                    client.DefaultRequestHeaders.Add(key, additionalHeaders.Get(key));
+                }
+            }
+
+            var response = await client.GetAsync(url);
+            return response.RequestMessage.RequestUri.ToString();
         }
     }
 }

@@ -16,6 +16,11 @@ namespace GooglePlayMusicAPI
             return Artist + " - " + Title;
         }
 
+        public bool IsAllAccessTrack()
+        {
+            return ID.StartsWith("T");
+        }
+
         [DataMember(Name = "album")]
         public string Album { get; set; }
         [DataMember(Name = "albumArtist")]

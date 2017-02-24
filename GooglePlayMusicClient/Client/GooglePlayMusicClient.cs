@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GooglePlayMusicAPI
@@ -19,8 +20,8 @@ namespace GooglePlayMusicAPI
         private IRequestClient requestClient;
 
         // old client id 565126123933-f27ojtmm7veeb51f8floos7s9vk80i5k
-        // Client id from gmusicapi
-        private static string ClientId = "565126123933-f27ojtmm7veeb51f8floos7s9vk80i5k";
+        // Client id from gmusicapi: 38918a453d07199354f8b19af05ec6562ced5788
+        private static string ClientId = "38918a453d07199354f8b19af05ec6562ced5788";
 
         private static string SJ_URL_BASE = "https://mclients.googleapis.com/sj/v2.5/";
         private static string SJ_URL_TRACKS = SJ_URL_BASE + "trackfeed";
@@ -31,10 +32,11 @@ namespace GooglePlayMusicAPI
         private static string SJ_URL_SEARCH = SJ_URL_BASE + "query";
         private static string SJ_URL_TRACK = SJ_URL_BASE + "fetchtrack";
         private static string SJ_URL_ALBUM = SJ_URL_BASE + "fetchalbum";
-        private static string SJ_URL_STREAM = "https://mclients.googleapis.com/music/";
-        private static string SJ_URL_STREAM_TRACK = SJ_URL_STREAM + "mplay";
         private static string SJ_URL_DEVICE_MANAGEMENT = SJ_URL_BASE + "devicemanagementinfo";
         private static string SJ_URL_CONFIG = SJ_URL_BASE + "config";
+
+        private static string SJ_URL_STREAM = "https://mclients.googleapis.com/music/";
+        private static string SJ_URL_STREAM_TRACK = SJ_URL_STREAM + "mplay";
 
         public bool IsSubscribed { get; set; }
 
@@ -121,18 +123,18 @@ namespace GooglePlayMusicAPI
             return await IncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
         }
 
-        ///// <summary>
-        ///// Gets track information
-        ///// </summary>
-        ///// <param name="trackId">Id of the track</param>
-        ///// <returns>Track information</returns>
-        //public async Task<Track> GetTrackAsync(string trackId)
-        //{
-        //    NameValueCollection additionalParams = new NameValueCollection();
-        //    additionalParams["nid"] = trackId;
+        /// <summary>
+        /// Gets track information
+        /// </summary>
+        /// <param name="trackId">Id of the track</param>
+        /// <returns>Track information</returns>
+        public async Task<Track> GetTrackAsync(string trackId)
+        {
+            NameValueCollection additionalParams = new NameValueCollection();
+            additionalParams["nid"] = trackId;
 
-        //    return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
-        //}
+            return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
+        }
 
         ///// <summary>
         ///// Gets album information
@@ -144,7 +146,7 @@ namespace GooglePlayMusicAPI
         //{
         //    NameValueCollection additionalParams = new NameValueCollection();
         //    additionalParams["nid"] = albumId;
-        //    additionalParams["include-tracks"] = includeTracks.ToString();
+        //    additionalParams["include-tracks"] = includeTracks.ToString().ToLower();
 
         //    return await GetAsync<Album>(SJ_URL_ALBUM, additionalParams);
         //}
@@ -166,24 +168,76 @@ namespace GooglePlayMusicAPI
             return await GetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
         }
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="deviceId"></param>
-        ///// <param name="trackId"></param>
-        ///// <param name="quality"></param>
-        ///// <returns></returns>
-        //public async Task<string> GetStreamUrlAsync(string deviceId, string trackId, string quality = "hi")
-        //{
-        //    NameValueCollection additionalParams = new NameValueCollection();
-        //    additionalParams["opt"] = quality;
-        //    additionalParams["mjck"] = trackId;
-        //    additionalParams["pt"] = "e";
-        //    additionalParams.Add(GetSaltAndSig(trackId));
-        //    additionalParams["net"] = "mob"; // mobile?
+        /// <summary>
+        /// Gets a stream url for the provided track
+        /// The stream url expires after 1 minute and only one instance of the stream is allowed
+        /// </summary>
+        /// <param name="deviceId">A device id</param>
+        /// <param name="trackId">Id or StoreId of the track</param>
+        /// <param name="quality">Quality of the stream</param>
+        /// <returns></returns>
+        public async Task<string> GetStreamUrlAsync(string deviceId, string trackId, string quality = "hi")
+        {
+            // Android device ids are now sent in base 10
+            string deviceIdToSend = deviceId;
+            if (IsAndroidDeviceId(deviceIdToSend))
+            {
+                if (deviceIdToSend.Contains("0x"))
+                {
+                    deviceIdToSend = deviceIdToSend.Replace("0x", "");
+                }
 
-        //    return await GetAsync<string>(SJ_URL_STREAM_TRACK, additionalParams);
-        //}
+                deviceIdToSend = Convert.ToInt64(deviceIdToSend, 16).ToString();
+            }
+
+            NameValueCollection additionalHeaders = new NameValueCollection();
+            additionalHeaders["X-Device-ID"] = deviceIdToSend;
+
+            NameValueCollection additionalParams = new NameValueCollection();
+            additionalParams["opt"] = quality;
+            additionalParams["pt"] = "e";
+            additionalParams["net"] = "mob"; // mobile?
+            additionalParams.Add(GetSaltAndSig(trackId));
+
+            //  if track is AllAccess, use mjck, else use songid
+            if (trackId.First() == 'T')
+            {
+                additionalParams["mjck"] = trackId;
+            }
+            else
+            {
+                additionalParams["songid"] = trackId;
+            }
+
+
+            string finalUrl = BuildRequestUrl(SJ_URL_STREAM_TRACK, additionalParams);
+            return await requestClient.PerformGetStringAsync(finalUrl, additionalHeaders);
+        }
+
+        /// <summary>
+        /// Gets a stream url for the track provided and then writes the stream content to the
+        /// file path provided
+        /// </summary>
+        /// <param name="outputFilePath">Path and filename of the file to save the stream content to</param>
+        /// <param name="deviceId">A device id</param>
+        /// <param name="trackId">Id or StoreId of the track</param>
+        /// <param name="quality">Quality of the stream</param>
+        /// <returns></returns>
+        public async Task<string> DownloadTrackAsync(string outputFilePath, string deviceId, string trackId, string quality = "hi")
+        {
+            string streamUrl = await GetStreamUrlAsync(deviceId, trackId, quality);
+
+            Track track = await GetTrackAsync(trackId);
+            using (HttpClient client = new HttpClient())
+            using (HttpResponseMessage response = await client.GetAsync(streamUrl))
+            using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
+            using (Stream streamToWriteTo = File.Open(outputFilePath, FileMode.Create))
+            {
+                await streamToReadFrom.CopyToAsync(streamToWriteTo);
+            }
+
+            return outputFilePath;
+        }
 
         #endregion
 
@@ -384,10 +438,10 @@ namespace GooglePlayMusicAPI
         #endregion
 
         #region Http Helper functions
-        private async Task<T> GetAsync<T>(string url, NameValueCollection additionalParams = null)
+        private async Task<T> GetAsync<T>(string url, NameValueCollection additionalParams = null, NameValueCollection additionalHeaders = null)
         {
             string finalUrl = BuildRequestUrl(url, additionalParams);
-            return await requestClient.PerformGetAsync<T>(finalUrl);
+            return await requestClient.PerformGetAsync<T>(finalUrl, additionalHeaders);
         }
 
         private async Task<T> PostAsync<T>(string url, JObject requestData, NameValueCollection additionalParams = null)
@@ -427,28 +481,58 @@ namespace GooglePlayMusicAPI
         #endregion
 
         #region Helper Functions
-
+        /// <summary>
+        /// Generate salt and signature based on method from
+        /// https://github.com/simon-weber/gmusicapi/blob/develop/gmusicapi/protocol/webclient.py
+        /// </summary>
+        /// <param name="trackId">Id of track</param>
+        /// <returns>NameValueCollection containing slt and sig</returns>
         private NameValueCollection GetSaltAndSig(string trackId)
         {
             NameValueCollection result = new NameValueCollection();
 
-            // Generate salt
             Random rand = new Random();
-            string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            string salt = new string(Enumerable.Repeat(chars, 12).Select(s => s[rand.Next(s.Length)]).ToArray());
+            string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            string salt = new string(Enumerable.Repeat(chars, 13).Select(s => s[rand.Next(s.Length)]).ToArray());
             result["slt"] = salt;
-
-            string key = "27f7313e-f75d-445a-ac99-56386a5fe879";
-            byte[] keyBin = Encoding.UTF8.GetBytes(key);
-            HMACSHA1 hmac = new HMACSHA1(keyBin);
             string saltedTrack = trackId + salt;
-            byte[] binToHash = Encoding.UTF8.GetBytes(saltedTrack);
+            
+            string key = GetKey();
+            byte[] keyBin = Encoding.ASCII.GetBytes(key);
+            HMACSHA1 hmac = new HMACSHA1(keyBin);
+            byte[] binToHash = Encoding.ASCII.GetBytes(saltedTrack);
             byte[] hashedBin = hmac.ComputeHash(binToHash);
             string hashedStr = Convert.ToBase64String(hashedBin);
-            string sig =  hashedStr.Replace('+', '-').Replace('/', '_').Replace('=', '.');
+            string urlSafeSig = hashedStr.Replace('+', '-').Replace('/', '_').Replace('=', '.');
+            string sig = urlSafeSig.Substring(0, urlSafeSig.Length - 1);
             result["sig"] = sig;
 
             return result;
+        }
+
+        /// <summary>
+        ///  Calculate the key based on the method from:
+        ///  https://github.com/simon-weber/gmusicapi/blob/develop/gmusicapi/protocol/mobileclient.py
+        ///  McStreamCall
+        /// </summary>
+        /// <returns>string representing the key to use in hash to find sig</returns>
+        private string GetKey()
+        {
+            // Calculate the key based on the method from:
+            // https://github.com/simon-weber/gmusicapi/blob/develop/gmusicapi/protocol/mobileclient.py
+            // McStreamCall
+            string s1Base64 = "VzeC4H4h+T2f0VI180nVX8x+Mb5HiTtGnKgH52Otj8ZCGDz9jRWyHb6QXK0JskSiOgzQfwTY5xgLLSdUSreaLVMsVVWfxfa8Rw==";
+            string s2Base64 = "ZAPnhUkYwQ6y5DdQxWThbvhJHN8msQ1rqJw0ggKdufQjelrKuiGGJI30aswkgCWTDyHkTGK9ynlqTkJ5L4CiGGUabGeo8M6JTQ==";
+            byte[] s1Bytes = Convert.FromBase64String(s1Base64);
+            byte[] s2Bytes = Convert.FromBase64String(s2Base64);
+
+            byte[] s1Ands2 = new byte[s1Bytes.Length];
+            for (int i = 0; i < s1Bytes.Length; i++)
+            {
+                s1Ands2[i] = (byte)(s1Bytes[i] ^ s2Bytes[i]);
+            }
+
+            return Encoding.ASCII.GetString(s1Ands2);
         }
 
         private string GetSearchEntryTypeFromValue(SearchEntryType val)
@@ -470,6 +554,12 @@ namespace GooglePlayMusicAPI
             }
 
             return result;
+        }
+
+        private bool IsAndroidDeviceId(string deviceId)
+        {
+            Regex rgx = new Regex("^0x[a-z0-9]*$");
+            return deviceId.Length == 18 && rgx.IsMatch(deviceId);
         }
 
         #endregion

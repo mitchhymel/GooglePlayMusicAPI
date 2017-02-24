@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace GooglePlayMusicAPI
 {
@@ -19,8 +21,23 @@ namespace GooglePlayMusicAPI
         [DataMember(Name = "lastAccessedTimeMs")]
         public string LastAccessedTimeMs { get; set; }
         [DataMember(Name = "type")]
-        public string Type { get; set; }
+        public DeviceType Type { get; set; }
         [DataMember(Name = "smartPhone")]
         public bool SmartPhone { get; set; }
+
+        [DataContract]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public enum DeviceType
+        {
+            [DataMember(Name = "ANDROID")]
+            Android,
+
+            [DataMember(Name = "IOS")]
+            IOS,
+
+            [DataMember(Name = "DESKTOP_APP")]
+            [EnumMember(Value = "DESKTOP_APP")]
+            DesktopApp
+        }
     }
 }
