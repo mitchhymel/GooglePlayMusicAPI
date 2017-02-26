@@ -17,3 +17,6 @@ This is not supported or endorsed by Google.  If Google decides to change their 
 
 # Usage
 View the GooglePlayMusicClientExample project for examples how to use the library.
+
+# Nuget
+Nuget package available at https://www.nuget.org/packages/GooglePlayMusicAPI
