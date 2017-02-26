@@ -63,6 +63,11 @@ namespace GooglePlayMusicAPI
             requestClient = inRequestClient;
         }
 
+        public GooglePlayMusicClient(string clientId)
+        {
+            requestClient = new RequestClient(clientId);
+        }
+
         #region Account functions
 
         public bool LoggedIn()
@@ -212,31 +217,6 @@ namespace GooglePlayMusicAPI
 
             string finalUrl = BuildRequestUrl(SJ_URL_STREAM_TRACK, additionalParams);
             return await requestClient.PerformGetStringAsync(finalUrl, additionalHeaders);
-        }
-
-        /// <summary>
-        /// Gets a stream url for the track provided and then writes the stream content to the
-        /// file path provided
-        /// </summary>
-        /// <param name="outputFilePath">Path and filename of the file to save the stream content to</param>
-        /// <param name="deviceId">A device id</param>
-        /// <param name="trackId">Id or StoreId of the track</param>
-        /// <param name="quality">Quality of the stream</param>
-        /// <returns></returns>
-        public async Task<string> DownloadTrackAsync(string outputFilePath, string deviceId, string trackId, string quality = "hi")
-        {
-            string streamUrl = await GetStreamUrlAsync(deviceId, trackId, quality);
-
-            Track track = await GetTrackAsync(trackId);
-            using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(streamUrl))
-            using (Stream streamToReadFrom = await response.Content.ReadAsStreamAsync())
-            using (Stream streamToWriteTo = File.Open(outputFilePath, FileMode.Create))
-            {
-                await streamToReadFrom.CopyToAsync(streamToWriteTo);
-            }
-
-            return outputFilePath;
         }
 
         #endregion
