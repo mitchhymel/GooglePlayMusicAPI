@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
     public class Playlist
@@ -28,7 +28,7 @@ namespace GooglePlayMusicAPI
         [DataMember(Name = "deleted")]
         public Boolean Deleted { get; set; }
         [DataMember(Name = "id")]
-        public string ID { get; set; }
+        public string Id { get; set; }
         [DataMember(Name = "kind")]
         public string Kind { get; set; }
         [DataMember(Name = "lastModifiedTimestamp")]
@@ -48,4 +48,11 @@ namespace GooglePlayMusicAPI
 
         public List<PlaylistEntry> Songs { get; set; }
     }
+
+    public enum PlaylistShareState
+    {
+        Public,
+        Private
+    }
+
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
     public class Album
@@ -20,8 +20,6 @@ namespace GooglePlayMusicAPI
         public string Artist { get; set; }
         [DataMember(Name = "artistId")]
         public List<string> ArtistId { get; set; }
-        [DataMember(Name = "year")]
-        public int year { get; set; }
         [DataMember(Name = "tracks")]
         public List<Track> Tracks { get; set; }
         [DataMember(Name = "description")]
@@ -29,12 +27,14 @@ namespace GooglePlayMusicAPI
         [DataMember(Name = "description_attribution")]
         public Attribution DescriptionAttribution { get; set; }
         [DataMember(Name = "explicitType")]
-        public string ExplicitType { get; set; }
+        public ExplicitType ExplicitType { get; set; }
         [DataMember(Name = "contentType")]
         public string ContentType { get; set; }
         [DataMember(Name = "kind")]
         public string Kind { get; set; }
         [DataMember(Name = "name")]
         public string Name { get; set; }
+        [DataMember(Name = "year")]
+        public string Year { get; set; }
     }
 }

@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using GooglePlayMusicAPI;
 using System.Diagnostics;
+using GooglePlayMusicAPI.Models.GooglePlayMusicModels;
+using GooglePlayMusicAPI.Models.RequestModels;
 
 namespace GooglePlayMusicClientExample
 {
@@ -74,7 +76,7 @@ namespace GooglePlayMusicClientExample
         private async void deletePlaylistButton_Click(object sender, EventArgs e)
         {
             Playlist selectedPlaylist = (Playlist)playlistListBox.SelectedItem;
-            await gpmClient.DeletePlaylistAsync(selectedPlaylist.ID);
+            await gpmClient.DeletePlaylistAsync(selectedPlaylist.Id);
             getPlaylistsButton.PerformClick();
         }
 
@@ -90,7 +92,7 @@ namespace GooglePlayMusicClientExample
 
             Playlist selectedPlaylist = (Playlist)playlistListBox.SelectedItem;
 
-            await gpmClient.AddToPlaylistAsync(selectedPlaylist.ID, songsList);
+            await gpmClient.AddToPlaylistAsync(selectedPlaylist.Id, songsList);
             getPlaylistsButton.PerformClick();
 
         }
@@ -100,7 +102,7 @@ namespace GooglePlayMusicClientExample
         {
             Track selectedSong = (Track)playlistSongsBox.SelectedItem;
             Playlist selectedPlaylist = (Playlist)playlistListBox.SelectedItem;
-            PlaylistEntry songEntry = selectedPlaylist.Songs.First(s => s.TrackID == selectedSong.ID);
+            PlaylistEntry songEntry = selectedPlaylist.Songs.First(s => s.TrackID == selectedSong.Id);
             await gpmClient.RemoveFromPlaylistAsync(new List<PlaylistEntry> { songEntry });
         }
 
@@ -122,7 +124,7 @@ namespace GooglePlayMusicClientExample
                     }
                     else
                     {
-                        thisSong = AllSongs.FirstOrDefault(s => s.ID == song.TrackID);
+                        thisSong = AllSongs.FirstOrDefault(s => s.Id == song.TrackID);
                     }
 
                     if (thisSong != null)
@@ -138,7 +140,7 @@ namespace GooglePlayMusicClientExample
         private async void renameButton_Click(object sender, EventArgs e)
         {
             Playlist selectedPlaylist = (Playlist)playlistListBox.SelectedItem;
-            await gpmClient.UpdatePlaylistAsync(selectedPlaylist.ID, renamePlaylistTextBox.Text, description:"test test new description test");
+            await gpmClient.UpdatePlaylistAsync(selectedPlaylist.Id, renamePlaylistTextBox.Text, description:"test test new description test");
             getPlaylistsButton.PerformClick();
         }
 
@@ -146,6 +148,10 @@ namespace GooglePlayMusicClientExample
         {
             try
             {
+                // SearchResult result = await gpmClient.SearchAsync("Fallout", 20, SearchEntryType.Artist);
+                // Artist art = await gpmClient.GetArtistAsync("A6gc34bsyqpyzttc7apngoabxba");
+                Album album = await gpmClient.GetAlbumAsync("Ba4nta73ydbdh5tgpte66skpyhu");
+
                 //if (AllDevices.Count == 0)
                 //{
                 //    AllDevices = await gpmClient.GetDevicesAsync();

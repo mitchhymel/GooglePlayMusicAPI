@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using System.Runtime.Serialization;
 
 namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
-    public class ConfigListEntry
+    public class RadioSeed
     {
-        [DataMember(Name = "key")]
-        public string Key { get; set; }
         [DataMember(Name = "kind")]
         public string Kind { get; set; }
-        [DataMember(Name = "value")]
-        public string Value { get; set; }
+        [DataMember(Name = "curatedStationId")]
+        public string CuratedStationId { get; set; }
+        [DataMember(Name = "seedType")]
+        public int SeedType { get; set; }
     }
 }

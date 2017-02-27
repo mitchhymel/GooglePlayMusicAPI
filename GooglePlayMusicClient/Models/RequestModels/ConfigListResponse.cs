@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
+using GooglePlayMusicAPI.Models.GooglePlayMusicModels;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.RequestModels
 {
     [DataContract]
     public class ConfigListResponse

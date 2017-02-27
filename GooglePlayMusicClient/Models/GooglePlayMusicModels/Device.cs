@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
     public class Device
@@ -24,20 +24,20 @@ namespace GooglePlayMusicAPI
         public DeviceType Type { get; set; }
         [DataMember(Name = "smartPhone")]
         public bool SmartPhone { get; set; }
+    }
 
-        [DataContract]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum DeviceType
-        {
-            [DataMember(Name = "ANDROID")]
-            Android,
+    [DataContract]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum DeviceType
+    {
+        [DataMember(Name = "ANDROID")]
+        Android,
 
-            [DataMember(Name = "IOS")]
-            IOS,
+        [DataMember(Name = "IOS")]
+        IOS,
 
-            [DataMember(Name = "DESKTOP_APP")]
-            [EnumMember(Value = "DESKTOP_APP")]
-            DesktopApp
-        }
+        [DataMember(Name = "DESKTOP_APP")]
+        [EnumMember(Value = "DESKTOP_APP")]
+        DesktopApp
     }
 }

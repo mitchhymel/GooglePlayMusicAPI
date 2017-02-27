@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
     public class PlaylistEntry

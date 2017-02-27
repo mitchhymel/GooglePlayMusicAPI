@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
     public class Track
@@ -18,17 +18,23 @@ namespace GooglePlayMusicAPI
 
         public bool IsAllAccessTrack()
         {
-            return ID.StartsWith("T");
+            return Id.StartsWith("T");
         }
 
         [DataMember(Name = "album")]
         public string Album { get; set; }
         [DataMember(Name = "albumArtist")]
         public string AlbumArtist { get; set; }
+        [DataMember(Name = "albumArtRef")]
+        public List<Image> AlbumArtRef { get; set; }
         [DataMember(Name = "albumId")]
         public string AlbumId { get; set; }
+        [DataMember(Name = "albumAvailableForPurchase")]
+        public bool AlbumAvailableForPurchase { get; set; }
         [DataMember(Name = "artist")]
         public string Artist { get; set; }
+        [DataMember(Name = "artistId")]
+        public List<string> ArtistIds { get; set; }
         [DataMember(Name = "beatsPerMinute")]
         public string BeatsPerMinute { get; set; }
         [DataMember(Name = "clientId")]
@@ -47,10 +53,12 @@ namespace GooglePlayMusicAPI
         public string DurationMillis { get; set; }
         [DataMember(Name = "estimatedSize")]
         public string EstimatedSize { get; set; }
+        [DataMember(Name = "explicitType")]
+        public ExplicitType ExplicitType { get; set; }
         [DataMember(Name = "genre")]
         public string Genre { get; set; }
         [DataMember(Name = "id")]
-        public string ID { get; set; }
+        public string Id { get; set; }
         [DataMember(Name = "kind")]
         public string Kind { get; set; }
         [DataMember(Name = "lastModifiedTimestamp")]
@@ -59,6 +67,8 @@ namespace GooglePlayMusicAPI
         public string NID { get; set; }
         [DataMember(Name = "playCount")]
         public string PlayCount { get; set; }
+        [DataMember(Name = "primaryVideo")]
+        public Video PrimaryVideo { get; set; }
         [DataMember(Name = "rating")]
         public string Rating { get; set; }
         [DataMember(Name = "recentTimestamp")]
@@ -71,6 +81,10 @@ namespace GooglePlayMusicAPI
         public string TotalDiscCount { get; set; }
         [DataMember(Name = "totalTrackCount")]
         public string TotalTrackCount { get; set; }
+        [DataMember(Name = "trackAvailableForSubscription")]
+        public bool TrackAvailableForSubscription { get; set; }
+        [DataMember(Name = "trackAvailableForPurchase")]
+        public bool TrackAvailableForPurchase { get; set; }
         [DataMember(Name = "trackNumber")]
         public string TrackNumber { get; set; }
         [DataMember(Name = "trackType")]
@@ -78,4 +92,11 @@ namespace GooglePlayMusicAPI
         [DataMember(Name = "year")]
         public string Year { get; set; }
     }
+
+    public enum ExplicitType
+    {
+        Explicit = 1,
+        NotExplicit = 2
+    }
+
 }

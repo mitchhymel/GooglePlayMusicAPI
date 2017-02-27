@@ -1,4 +1,6 @@
-﻿using Mono.Web;
+﻿using GooglePlayMusicAPI.Models.GooglePlayMusicModels;
+using GooglePlayMusicAPI.Models.RequestModels;
+using Mono.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -32,6 +34,7 @@ namespace GooglePlayMusicAPI
         private static string SJ_URL_SEARCH = SJ_URL_BASE + "query";
         private static string SJ_URL_TRACK = SJ_URL_BASE + "fetchtrack";
         private static string SJ_URL_ALBUM = SJ_URL_BASE + "fetchalbum";
+        private static string SJ_URL_ARTIST = SJ_URL_BASE + "fetchartist";
         private static string SJ_URL_DEVICE_MANAGEMENT = SJ_URL_BASE + "devicemanagementinfo";
         private static string SJ_URL_CONFIG = SJ_URL_BASE + "config";
 
@@ -39,19 +42,6 @@ namespace GooglePlayMusicAPI
         private static string SJ_URL_STREAM_TRACK = SJ_URL_STREAM + "mplay";
 
         public bool IsSubscribed { get; set; }
-
-        public enum ShareState { PUBLIC, PRIVATE}
-        public enum SearchEntryType
-        {
-            SONG = 1,
-            ARTIST = 2,
-            ALBUM = 4,
-            PLAYLIST = 8,
-            STATION = 16,
-            SITUATION = 32,
-            VIDEO = 64,
-            PODCAST = 128
-        }
 
         public GooglePlayMusicClient()
         {
@@ -141,20 +131,39 @@ namespace GooglePlayMusicAPI
             return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
         }
 
-        ///// <summary>
-        ///// Gets album information
-        ///// </summary>
-        ///// <param name="albumId">Id of the album</param>
-        ///// <param name="includeTracks">boolean indicating if all track information should be fetched as well</param>
-        ///// <returns>Album information</returns>
-        //public async Task<Album> GetAlbumAsync(string albumId, bool includeTracks = true)
-        //{
-        //    NameValueCollection additionalParams = new NameValueCollection();
-        //    additionalParams["nid"] = albumId;
-        //    additionalParams["include-tracks"] = includeTracks.ToString().ToLower();
+        /// <summary>
+        /// Gets artist information
+        /// </summary>
+        /// <param name="artistId">Id of the artist</param>
+        /// <param name="includeAlbums">Fetches the artist's albums if true</param>
+        /// <param name="maxTopTracks">The max number of the artist's top tracks to fetch</param>
+        /// <param name="maxRelatedArtists">The max number of related artists to fetch</param>
+        /// <returns>Artist information</returns>
+        public async Task<Artist> GetArtistAsync(string artistId, bool includeAlbums = true, int maxTopTracks = 5, int maxRelatedArtists = 5)
+        {
+            NameValueCollection additionalParams = new NameValueCollection();
+            additionalParams["nid"] = artistId;
+            additionalParams["include-albums"] = includeAlbums.ToString();
+            additionalParams["num-top-tracks"] = maxTopTracks.ToString();
+            additionalParams["num-related-artists"] = maxRelatedArtists.ToString();
 
-        //    return await GetAsync<Album>(SJ_URL_ALBUM, additionalParams);
-        //}
+            return await GetAsync<Artist>(SJ_URL_ARTIST, additionalParams);
+        }
+
+        /// <summary>
+        /// Gets album information
+        /// </summary>
+        /// <param name="albumId">Id of the album</param>
+        /// <param name="includeTracks">boolean indicating if all track information should be fetched as well</param>
+        /// <returns>Album information</returns>
+        public async Task<Album> GetAlbumAsync(string albumId, bool includeTracks = true)
+        {
+            NameValueCollection additionalParams = new NameValueCollection();
+            additionalParams["nid"] = albumId;
+            additionalParams["include-tracks"] = includeTracks.ToString();
+
+            return await GetAsync<Album>(SJ_URL_ALBUM, additionalParams);
+        }
 
         /// <summary>
         /// Searches for the provided query
@@ -163,14 +172,15 @@ namespace GooglePlayMusicAPI
         /// <param name="types">Bitwise combination of SearchEntryTypes to search for</param>
         /// <param name="maxResults">Max results</param>
         /// <returns></returns>
-        public async Task<SearchResponse> SearchAsync(string searchQuery, SearchEntryType types = 0, int maxResults = 50)
+        public async Task<SearchResult> SearchAsync(string searchQuery, int maxResults = 50, params SearchEntryType[] types)
         {
             NameValueCollection additionalParams = new NameValueCollection();
             additionalParams["q"] = searchQuery;
             additionalParams["ct"] = GetSearchEntryTypeFromValue(types);
             additionalParams["max-results"] = maxResults.ToString();
 
-            return await GetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
+            SearchResponse response = await GetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
+            return new SearchResult(response);
         }
 
         /// <summary>
@@ -254,7 +264,7 @@ namespace GooglePlayMusicAPI
 
             foreach (Playlist playlist in playlists)
             {
-                List<PlaylistEntry> thisPlaylistSongs = entries.Where(s => s.PlaylistID == playlist.ID).ToList();
+                List<PlaylistEntry> thisPlaylistSongs = entries.Where(s => s.PlaylistID == playlist.Id).ToList();
                 playlist.Songs = thisPlaylistSongs.OrderBy(s => long.Parse(s.AbsolutePosition)).ToList();
             }
 
@@ -268,7 +278,7 @@ namespace GooglePlayMusicAPI
         /// <param name="description">Description of the playlist to be created</param>
         /// <param name="shareState">If the playlist will be PUBLIC or PRIVATE</param>
         /// <returns></returns>
-        public async Task<MutatePlaylistResponse> CreatePlaylistAsync(string name, string description = null, ShareState shareState = ShareState.PRIVATE)
+        public async Task<MutatePlaylistResponse> CreatePlaylistAsync(string name, string description = null, PlaylistShareState shareState = PlaylistShareState.Private)
         {
             JObject requestData = new JObject()
             { { "mutations" , new JArray()
@@ -280,7 +290,7 @@ namespace GooglePlayMusicAPI
                             {"creationTimestamp", "-1"},
                             {"lastModifiedTimestamp","0"},
                             {"type", "USER_GENERATED"},
-                            {"shareState", shareState == ShareState.PRIVATE ? "PRIVATE" : "PUBLIC" },
+                            {"shareState", shareState == PlaylistShareState.Private ? "PRIVATE" : "PUBLIC" },
                             {"description", description}
                         }
                     } }
@@ -315,7 +325,7 @@ namespace GooglePlayMusicAPI
         /// <param name="description">New description for the playlist (or null to make no changes)</param>
         /// <param name="shareState">New share state (PUBLIC or PRIVATE) (or null to make no changes)</param>
         /// <returns></returns>
-        public async Task<MutateResponse> UpdatePlaylistAsync(string playlistId, string name, string description = null, ShareState? shareState = null)
+        public async Task<MutateResponse> UpdatePlaylistAsync(string playlistId, string name, string description = null, PlaylistShareState? shareState = null)
         {
             JObject requestData = new JObject()
             { { "mutations" , new JArray()
@@ -361,10 +371,10 @@ namespace GooglePlayMusicAPI
                     { "lastModifiedTimestamp", 0},
                     { "playlistId", playlistId },
                     { "source", 1 },
-                    {"trackId", song.ID }
+                    {"trackId", song.Id }
                     };
 
-                if (song.ID.First() == 'T')
+                if (song.Id.First() == 'T')
                     songJObject["source"] = 2;
 
                 if (i > 0)
@@ -515,22 +525,26 @@ namespace GooglePlayMusicAPI
             return Encoding.ASCII.GetString(s1Ands2);
         }
 
-        private string GetSearchEntryTypeFromValue(SearchEntryType val)
+        private string GetSearchEntryTypeFromValue(SearchEntryType[] types)
         {
-            string result = "1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9";
-            if (val != 0)
+            if (types == null)
             {
-                List<string> strTypes = new List<string>();
-                foreach (SearchEntryType type in Enum.GetValues(typeof(SearchEntryType)))
-                {
-                    if (val.HasFlag(type))
-                    {
-                        double pow = Math.Log((double)type, (double)2) + 1;
-                        strTypes.Add(pow.ToString());
-                    }
-                }
+                return "1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9";
+            }
 
-                result = String.Join("%2C", strTypes.ToArray());
+            int i = 0;
+            string result = "";
+            foreach (SearchEntryType type in types)
+            {
+                if (i == 0)
+                {
+                    result += (int)type;
+                }
+                else
+                {
+                    result += "%2C" + (int)type;
+                }
+                i++;
             }
 
             return result;

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Serialization;
 
-namespace GooglePlayMusicAPI
+namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
 {
     [DataContract]
     public class Artist
@@ -26,6 +26,8 @@ namespace GooglePlayMusicAPI
         public List<Album> Albums { get; set; }
         [DataMember(Name = "topTracks")]
         public List<Track> TopTracks { get; set; }
+        [DataMember(Name = "related_artists")]
+        public List<Artist> RelatedArtists { get; set; }
         [DataMember(Name = "total_albums")]
         public int TotalAlbums { get; set; }
         [DataMember(Name = "artist_bio_attribution")]

@@ -70,10 +70,14 @@
     <Compile Include="Models\GooglePlayMusicModels\Image.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Playlist.cs" />
     <Compile Include="Models\GooglePlayMusicModels\PlaylistEntry.cs" />
-    <Compile Include="Models\GooglePlayMusicModels\Series.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\RadioSeed.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\SearchEntry.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\Podcast.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Situation.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Station.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\Thumbnail.cs" />
     <Compile Include="Models\GooglePlayMusicModels\Track.cs" />
+    <Compile Include="Models\GooglePlayMusicModels\Video.cs" />
     <Compile Include="Models\GooglePlayMusicModels\YoutubeVideo.cs" />
     <Compile Include="Models\RequestModels\ConfigListResponse.cs" />
     <Compile Include="Models\RequestModels\IncrementalData.cs" />
@@ -81,6 +85,7 @@
     <Compile Include="Models\RequestModels\MutatePlaylistResponse.cs" />
     <Compile Include="Models\RequestModels\MutateResponse.cs" />
     <Compile Include="Models\RequestModels\SearchResponse.cs" />
+    <Compile Include="Models\RequestModels\SearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
