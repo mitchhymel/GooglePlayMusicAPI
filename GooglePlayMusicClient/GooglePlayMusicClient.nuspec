@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <title>GooglePlayMusicClient</title>
     <authors>mitchhymel</authors>
     <owners>mitchhymel</owners>
     <projectUrl>https://github.com/mitchhymel/GooglePlayMusicAPI</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An unnofficial Google Play Music client for .NET</description>
-    <releaseNotes>1.3.0 release adds support for getting Artist and Album info, as well as improving the Models</releaseNotes>
+    <releaseNotes>1.4.0 release fixes NavigationalConfidence errors</releaseNotes>
     <copyright>Copyright 2017</copyright>
   </metadata>
 </package>
