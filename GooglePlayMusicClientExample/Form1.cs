@@ -150,7 +150,7 @@ namespace GooglePlayMusicClientExample
             {
                 // SearchResult result = await gpmClient.SearchAsync("Fallout", 20, SearchEntryType.Artist);
                 // Artist art = await gpmClient.GetArtistAsync("A6gc34bsyqpyzttc7apngoabxba");
-                Album album = await gpmClient.GetAlbumAsync("Ba4nta73ydbdh5tgpte66skpyhu");
+                SearchResult result = await gpmClient.SearchAsync("tidelines", 20, SearchEntryType.Artist, SearchEntryType.Album, SearchEntryType.Track);
 
                 //if (AllDevices.Count == 0)
                 //{

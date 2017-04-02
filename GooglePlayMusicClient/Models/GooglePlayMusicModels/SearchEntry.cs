@@ -19,7 +19,7 @@ namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
         [DataMember(Name = "navigational_result")]
         public bool NavigationalResult { get; set; }
         [DataMember(Name = "navigational_confidence")]
-        public int NavigationalConfidence { get; set; }
+        public float NavigationalConfidence { get; set; }
         [DataMember(Name = "artist")]
         public Artist Artist { get; set; }
         [DataMember(Name = "album")]
