@@ -363,6 +363,13 @@ namespace GooglePlayMusicAPI
             int i = 0;
             foreach (Track song in songs)
             {
+                // song.Id can be null if it's not in user's library
+                string trackId = song.Id;
+                if (trackId == null)
+                {
+                    trackId = song.StoreID;
+                }
+
                 JObject songJObject = new JObject
                     {
                     { "clientId", current_uid.ToString() },
@@ -371,11 +378,13 @@ namespace GooglePlayMusicAPI
                     { "lastModifiedTimestamp", 0},
                     { "playlistId", playlistId },
                     { "source", 1 },
-                    {"trackId", song.Id }
+                    {"trackId", trackId }
                     };
 
-                if (song.Id.First() == 'T')
+                if (trackId.First() == 'T')
+                {
                     songJObject["source"] = 2;
+                }
 
                 if (i > 0)
                     songJObject["precedingEntryId"] = prev_uid;
@@ -410,9 +419,15 @@ namespace GooglePlayMusicAPI
             JArray songsToDelete = new JArray();
             foreach (PlaylistEntry entry in songs)
             {
+                string trackId = entry.ID;
+                if (trackId == null)
+                {
+                    trackId = entry.TrackID;
+                }
+
                 songsToDelete.Add(new JObject
                 {
-                {"delete", entry.ID}
+                {"delete", trackId}
                 });
             }
 
