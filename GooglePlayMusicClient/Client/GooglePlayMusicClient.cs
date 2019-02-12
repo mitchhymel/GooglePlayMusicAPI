@@ -1,4 +1,5 @@
-﻿using GooglePlayMusicAPI.Models.GooglePlayMusicModels;
+﻿using GooglePlayMusicAPI.Client;
+using GooglePlayMusicAPI.Models.GooglePlayMusicModels;
 using GooglePlayMusicAPI.Models.RequestModels;
 using Mono.Web;
 using Newtonsoft.Json;
@@ -21,10 +22,6 @@ namespace GooglePlayMusicAPI
     {
         private IRequestClient requestClient;
 
-        // old client id 565126123933-f27ojtmm7veeb51f8floos7s9vk80i5k
-        // Client id from gmusicapi: 38918a453d07199354f8b19af05ec6562ced5788
-        private static string ClientId = "38918a453d07199354f8b19af05ec6562ced5788";
-
         private static string SJ_URL_BASE = "https://mclients.googleapis.com/sj/v2.5/";
         private static string SJ_URL_TRACKS = SJ_URL_BASE + "trackfeed";
         private static string SJ_URL_PLAYLISTS_FEED = SJ_URL_BASE + "playlistfeed";
@@ -45,17 +42,12 @@ namespace GooglePlayMusicAPI
 
         public GooglePlayMusicClient()
         {
-            requestClient = new RequestClient(ClientId);
+            requestClient = new OAuth2Client();
         }
 
         public GooglePlayMusicClient(IRequestClient inRequestClient)
         {
             requestClient = inRequestClient;
-        }
-
-        public GooglePlayMusicClient(string clientId)
-        {
-            requestClient = new RequestClient(clientId);
         }
 
         #region Account functions
@@ -68,12 +60,10 @@ namespace GooglePlayMusicAPI
         /// <summary>
         /// Log in to Google Play Music using OAuth2 and set configuration
         /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
         /// <returns>boolean indicating success or failure</returns>
-        public async Task<bool> LoginAsync(string email, string password)
+        public async Task<bool> LoginAsync()
         {
-            bool loggedIn = await requestClient.LoginAsync(email, password);
+            bool loggedIn = await requestClient.LoginAsync();
             if (loggedIn)
             {
                 List<ConfigListEntry> configList = await GetAccountConfig();

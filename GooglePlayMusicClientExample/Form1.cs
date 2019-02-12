@@ -10,6 +10,7 @@ using GooglePlayMusicAPI;
 using System.Diagnostics;
 using GooglePlayMusicAPI.Models.GooglePlayMusicModels;
 using GooglePlayMusicAPI.Models.RequestModels;
+using System.Threading.Tasks;
 
 namespace GooglePlayMusicClientExample
 {
@@ -29,7 +30,7 @@ namespace GooglePlayMusicClientExample
 
         private async void loginButton_Click(object sender, EventArgs e)
         {
-            bool loggedIn = await gpmClient.LoginAsync(Secret.USERNAME, Secret.PASSWORD);
+            bool loggedIn = await gpmClient.LoginAsync();
             this.statusLabel.Text = String.Format("Login Status: {0}", loggedIn);
         }
 

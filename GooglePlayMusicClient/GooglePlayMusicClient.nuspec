@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>$id$</id>
-    <version>1.4.0</version>
+    <id>GooglePlayMusicClient</id>
+    <version>1.5.0</version>
     <title>GooglePlayMusicClient</title>
     <authors>mitchhymel</authors>
     <owners>mitchhymel</owners>
     <projectUrl>https://github.com/mitchhymel/GooglePlayMusicAPI</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>An unnofficial Google Play Music client for .NET</description>
-    <releaseNotes>1.4.0 release fixes NavigationalConfidence errors</releaseNotes>
+    <releaseNotes>1.5.0 release fixes error in AddToPlaylist where trackId might be null and adds fall back to the store's trackId</releaseNotes>
     <copyright>Copyright 2017</copyright>
   </metadata>
 </package>
