@@ -40,14 +40,19 @@ namespace GooglePlayMusicAPI
 
         public bool IsSubscribed { get; set; }
 
-        public GooglePlayMusicClient()
+        public GooglePlayMusicClient(string applicationName)
         {
-            requestClient = new OAuth2Client();
+            requestClient = new OAuth2Client(applicationName);
         }
 
         public GooglePlayMusicClient(IRequestClient inRequestClient)
         {
             requestClient = inRequestClient;
+        }
+
+        public static GooglePlayMusicClient GetClientWithEmailPasswordLogin()
+        {
+            return new GooglePlayMusicClient(new MasterLoginClient(MasterLoginClient.GMUSICAPI_CLIENTID));
         }
 
         #region Account functions
@@ -64,6 +69,29 @@ namespace GooglePlayMusicAPI
         public async Task<bool> LoginAsync()
         {
             bool loggedIn = await requestClient.LoginAsync();
+            if (loggedIn)
+            {
+                List<ConfigListEntry> configList = await GetAccountConfig();
+                string subscribeVal = configList.Where(x => x.Key == "isNautilusUser").First().Value;
+                IsSubscribed = Boolean.Parse(subscribeVal);
+            }
+
+            return loggedIn;
+        }
+
+        /// <summary>
+        /// Log in to google play with email and password then set configuration
+        /// 
+        /// Generally shouldn't need to use this and should always prefer Login with OAuth2.
+        /// If you do need to use this, then you must create the GooglePlayMusicClient with a 
+        /// MasterLoginClient since the request client used by default doesn't support this.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public async Task<bool> LoginWithEmailPasswordAsync(string email, string password)
+        {
+            bool loggedIn = await requestClient.LoginWithEmailPasswordAsync(email, password);
             if (loggedIn)
             {
                 List<ConfigListEntry> configList = await GetAccountConfig();

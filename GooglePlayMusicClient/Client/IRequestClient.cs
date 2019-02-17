@@ -12,6 +12,7 @@ namespace GooglePlayMusicAPI
     {
         bool IsLoggedIn();
         Task<bool> LoginAsync();
+        Task<bool> LoginWithEmailPasswordAsync(string email, string password);
         Task<List<T>> PerformIncrementalPostAsync<T>(string url, int itemsToGet = 0);
         Task<T> PerformPostAsync<T>(string url, JObject data);
         Task<T> PerformGetAsync<T>(string url, NameValueCollection additionalHeaders = null);
