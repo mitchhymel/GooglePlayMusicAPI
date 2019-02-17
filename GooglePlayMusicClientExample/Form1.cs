@@ -21,7 +21,7 @@ namespace GooglePlayMusicClientExample
         private List<PlaylistEntry> AllEntries = new List<PlaylistEntry>();
         private List<Device> AllDevices = new List<Device>();
 
-        GooglePlayMusicClient gpmClient = new GooglePlayMusicClient();
+        GooglePlayMusicClient gpmClient = new GooglePlayMusicClient("GooglePlayMusicClientExample");
 
         public Form1()
         {
