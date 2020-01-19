@@ -70,7 +70,7 @@ namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
         [DataMember(Name = "primaryVideo")]
         public Video PrimaryVideo { get; set; }
         [DataMember(Name = "rating")]
-        public string Rating { get; set; }
+        public Rating Rating { get; set; }
         [DataMember(Name = "recentTimestamp")]
         public string RecentTimestamp { get; set; }
         [DataMember(Name = "storeId")]
@@ -97,6 +97,13 @@ namespace GooglePlayMusicAPI.Models.GooglePlayMusicModels
     {
         Explicit = 1,
         NotExplicit = 2
+    }
+
+    public enum Rating
+    {
+        NoThumb=0,
+        DownThumb=1,
+        UpThumb=5
     }
 
 }

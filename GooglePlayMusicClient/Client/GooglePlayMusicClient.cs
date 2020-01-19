@@ -30,6 +30,7 @@ namespace GooglePlayMusicAPI
         private static string SJ_URL_PLAYLIST_ENTRIES_BATCH = SJ_URL_BASE + "plentriesbatch";
         private static string SJ_URL_SEARCH = SJ_URL_BASE + "query";
         private static string SJ_URL_TRACK = SJ_URL_BASE + "fetchtrack";
+        private static string SJ_URL_TRACK_BATCH = SJ_URL_BASE + "trackbatch";
         private static string SJ_URL_ALBUM = SJ_URL_BASE + "fetchalbum";
         private static string SJ_URL_ARTIST = SJ_URL_BASE + "fetchartist";
         private static string SJ_URL_DEVICE_MANAGEMENT = SJ_URL_BASE + "devicemanagementinfo";
@@ -144,9 +145,25 @@ namespace GooglePlayMusicAPI
         public async Task<Track> GetTrackAsync(string trackId)
         {
             NameValueCollection additionalParams = new NameValueCollection();
+
+            if (trackId.StartsWith("T"))
+            {
+                additionalParams["storeId"] = trackId;
+            }
+
             additionalParams["nid"] = trackId;
 
             return await GetAsync<Track>(SJ_URL_TRACK, additionalParams);
+        }
+
+        public async Task<List<Track>> RateTracksAsync(List<Track> tracks, Rating rating)
+        {
+            foreach (Track track in tracks)
+            {
+                track.Rating = rating;
+            }
+
+            return await PostAsync<List<Track>>(SJ_URL_TRACK_BATCH, null /*request data*/);
         }
 
         /// <summary>
@@ -190,12 +207,24 @@ namespace GooglePlayMusicAPI
         /// <param name="types">Bitwise combination of SearchEntryTypes to search for</param>
         /// <param name="maxResults">Max results</param>
         /// <returns></returns>
-        public async Task<SearchResult> SearchAsync(string searchQuery, int maxResults = 50, params SearchEntryType[] types)
+        public async Task<SearchResult> SearchAsync(string searchQuery, SearchEntryType[] types = null, int maxResults = 0)
         {
+            if (maxResults > 100)
+            {
+                // Google's API will only return 10 results if you set max-results to a value over 100
+                // https://github.com/simon-weber/gmusicapi/issues/520
+                // I'm making the assumption here that if maxResults is greather than 100, you probably want
+                // as many results as possible.
+                maxResults = 0;
+            }
+
             NameValueCollection additionalParams = new NameValueCollection();
             additionalParams["q"] = searchQuery;
             additionalParams["ct"] = GetSearchEntryTypeFromValue(types);
-            additionalParams["max-results"] = maxResults.ToString();
+            if (maxResults != 0)
+            {
+                additionalParams["max-results"] = maxResults.ToString();
+            }
 
             SearchResponse response = await GetAsync<SearchResponse>(SJ_URL_SEARCH, additionalParams);
             return new SearchResult(response);

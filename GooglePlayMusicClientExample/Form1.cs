@@ -151,32 +151,9 @@ namespace GooglePlayMusicClientExample
             {
                 // SearchResult result = await gpmClient.SearchAsync("Fallout", 20, SearchEntryType.Artist);
                 // Artist art = await gpmClient.GetArtistAsync("A6gc34bsyqpyzttc7apngoabxba");
-                SearchResult result = await gpmClient.SearchAsync("tidelines", 20, SearchEntryType.Artist, SearchEntryType.Album, SearchEntryType.Track);
+                SearchResult result = await gpmClient.SearchAsync("tidelines", new SearchEntryType[] { SearchEntryType.Artist, SearchEntryType.Album, SearchEntryType.Track });
 
-                //if (AllDevices.Count == 0)
-                //{
-                //    AllDevices = await gpmClient.GetDevicesAsync();
-                //}
-
-                //Device androidDevice = AllDevices.Where(d => d.Type == Device.DeviceType.IOS).FirstOrDefault();
-                //if (androidDevice == null)
-                //{
-                //    Debug.WriteLine("No android devices found");
-                //    return;
-                //}
-
-
-                //ListBox.SelectedObjectCollection songsSelected = songListBox.SelectedItems;
-                //Track song = (Track)songsSelected[0];
-                //if (song == null)
-                //{
-                //    Debug.WriteLine("No track selected");
-                //}
-
-                //string url = await gpmClient.GetStreamUrlAsync(androidDevice.Id, song.ID);
-                //string path = song.ToString() + ".mp3";
-
-                //Debug.WriteLine(path);
+                
             }
             catch (Exception exception)
             {
