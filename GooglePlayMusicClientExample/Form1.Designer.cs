@@ -48,6 +48,7 @@
             this.renameButton = new System.Windows.Forms.Button();
             this.deleteSong = new System.Windows.Forms.Button();
             this.searchButton = new System.Windows.Forms.Button();
+            this.incrementalGetTracksButton = new System.Windows.Forms.Button();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -193,12 +194,12 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(330, 42);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(305, 42);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(329, 38);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(304, 38);
             this.toolStripMenuItem1.Text = "toolStripMenuItem1";
             // 
             // renamePlaylistTextBox
@@ -242,11 +243,22 @@
             this.searchButton.UseVisualStyleBackColor = true;
             this.searchButton.Click += new System.EventHandler(this.searchButton_Click);
             // 
+            // incrementalGetTracksButton
+            // 
+            this.incrementalGetTracksButton.Location = new System.Drawing.Point(392, 23);
+            this.incrementalGetTracksButton.Name = "incrementalGetTracksButton";
+            this.incrementalGetTracksButton.Size = new System.Drawing.Size(134, 44);
+            this.incrementalGetTracksButton.TabIndex = 20;
+            this.incrementalGetTracksButton.Text = "Incremental Get";
+            this.incrementalGetTracksButton.UseVisualStyleBackColor = true;
+            this.incrementalGetTracksButton.Click += new System.EventHandler(this.incrementalTracksGetButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1946, 1212);
+            this.Controls.Add(this.incrementalGetTracksButton);
             this.Controls.Add(this.searchButton);
             this.Controls.Add(this.renamePlaylistTextBox);
             this.Controls.Add(this.deleteSong);
@@ -295,6 +307,7 @@
         private System.Windows.Forms.Button renameButton;
         private System.Windows.Forms.Button deleteSong;
         private System.Windows.Forms.Button searchButton;
+        private System.Windows.Forms.Button incrementalGetTracksButton;
     }
 }
 

@@ -165,5 +165,23 @@ namespace GooglePlayMusicClientExample
         {
             this.Size = new Size(1000, 700);
         }
+
+        private async void incrementalTracksGetButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                IncrementalResponse<Track> resp = await gpmClient.GetLibraryIncrementalAsync(10, null);
+                Debug.WriteLine(resp.NextPageToken);
+                Debug.WriteLine(resp.Data.Items[0].ToString());
+
+                resp = await gpmClient.GetLibraryIncrementalAsync(10, resp.NextPageToken);
+                Debug.WriteLine(resp.NextPageToken);
+                Debug.WriteLine(resp.Data.Items[0].ToString());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
     }
 }

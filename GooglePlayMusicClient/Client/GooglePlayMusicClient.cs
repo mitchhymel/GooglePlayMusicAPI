@@ -128,13 +128,28 @@ namespace GooglePlayMusicAPI
         #region Library and Track functions
 
         /// <summary>
-        /// Gets all tracks in the library
+        /// Gets all tracks in the user's library
         /// </summary>
-        /// <param name="tracksToGet">Number of tracks to fetch</param>
         /// <returns>List of all the songs in the library</returns>
-        public async Task<List<Track>> GetLibraryAsync(int tracksToGet = 0)
+        public async Task<List<Track>> GetLibraryAsync()
         {
-            return await IncrementalPostAsync<Track>(SJ_URL_TRACKS, tracksToGet);
+            return await IncrementalPostAsync<Track>(SJ_URL_TRACKS);
+        }
+
+        /// <summary>
+        /// An alternative way to get user's library incrementally
+        /// </summary>
+        /// <param name="tracksToGet">Number of tracks to get per page</param>
+        /// <param name="nextPageToken">Next page token, if null will start at the first page</param>
+        /// <returns>List of tracks from library from the page requested and a nextpagetoken if there is more content</returns>
+        public async Task<IncrementalResponse<Track>> GetLibraryIncrementalAsync(int tracksToGet, string nextPageToken = null)
+        {
+            JObject requestData = new JObject()
+            {
+                { "max-results", tracksToGet.ToString() },
+                { "start-token", nextPageToken }
+            };
+            return await PostAsync<IncrementalResponse<Track>>(SJ_URL_TRACKS, requestData);
         }
 
         /// <summary>
@@ -502,7 +517,7 @@ namespace GooglePlayMusicAPI
             return await requestClient.PerformPostAsync<T>(finalUrl, requestData);
         }
 
-        private async Task<List<T>> IncrementalPostAsync<T>(string url, int itemsToGet, NameValueCollection additionalParams = null)
+        private async Task<List<T>> IncrementalPostAsync<T>(string url, int itemsToGet = 0, NameValueCollection additionalParams = null)
         {
             string finalUrl = BuildRequestUrl(url, additionalParams);
             return await requestClient.PerformIncrementalPostAsync<T>(finalUrl, itemsToGet);
