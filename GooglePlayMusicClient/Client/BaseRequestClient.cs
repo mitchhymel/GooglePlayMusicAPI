@@ -70,6 +70,22 @@ namespace GooglePlayMusicAPI.Client
 
                 IncrementalResponse<T> response = await PerformPostAsync<IncrementalResponse<T>>(url, requestData);
 
+                // sometimes the previous request will include a non null next page token, so we fetch and get no data
+                // which results in null data and null nextpagetoken. In this case, we've fetched all we can, so return
+                // what we've fetched.
+                if (response.Data == null)
+                {
+                    if (response.NextPageToken == null)
+                    {
+                        return results;
+                    }
+                    else
+                    {
+                        // TODO: error?
+                        return results;
+                    }
+                }
+
                 results.AddRange(response.Data.Items);
                 totalTracks += response.Data.Items.Count;
 
